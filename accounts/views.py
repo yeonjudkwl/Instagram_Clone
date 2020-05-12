@@ -1,7 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
+from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm
+
+User = get_user_model()
 
 # Create your views here.
 def signup(request):
@@ -30,3 +33,18 @@ def login(request):
         'form': form
     }
     return render(request, 'accounts/login.html', context)
+
+def profile(request, username):
+    user= get_object_or_404(User, username=username)
+    context = {
+        'user': user
+    }
+    return render(request, 'accounts/profile.html', context)
+
+def follow(request, username):
+    user= get_object_or_404(User, username=username)
+    if request.user in user.followers.all():
+        user.followers.remove(request.user)
+    else:
+        user.followers.add(request.user)
+    return redirect('accounts:profile', user.username)
